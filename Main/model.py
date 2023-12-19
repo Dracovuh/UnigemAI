@@ -1,13 +1,13 @@
-# 1. Input library and data
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.preprocessing import MinMaxScaler
+from keras.models import load_model
 from keras.models import Sequential, save_model
 from keras.layers import Dense, LSTM, Dropout
 from keras.initializers import Orthogonal
-from constant import features, target, dataName
+from constant import features, target, dataName, modelName
 import os
 
 data = pd.read_csv('./data/' + dataName + '.csv')
@@ -49,55 +49,31 @@ xTrain, yTrain = np.array(xTrain), np.array(yTrain)
 print(len(xTrain))
 xTrain = np.reshape(xTrain, (xTrain.shape[0], xTrain.shape[1], featureNumber))
 
-# 6. Define LSTM model
-# model = Sequential()
+# Load the pre-trained LSTM model
+pretrained_model = load_model("LSTM/" + modelName +'.h5')
 
-# model.add(LSTM(units= 70, return_sequences= True, input_shape = (xTrain.shape[1], 5)))
-# model.add(Dropout(0.2))
+# Freeze the layers (optional)
+for layer in pretrained_model.layers:
+    layer.trainable = False
 
-# model.add(LSTM(units=70,return_sequences=True))
-# model.add(Dropout(0.2))
+# Modify the model for your new task
+new_model = Sequential(pretrained_model.layers[:-1])  # Removing the original output layer
+new_model.add(Dense(units=1, activation='sigmoid'))  # Add new output layer
 
-# model.add(LSTM(units=70,return_sequences=True))
-# model.add(Dropout(0.2))
+# Compile the new model
+new_model.compile(optimizer='adam', loss='mean_squared_error')
 
-# model.add(LSTM(units=70))
-# model.add(Dropout(0.2))
+# Train the new model
+new_model.fit(xTrain, yTrain, epochs=80, batch_size=32)
 
-# model.add(Dense(units=1))
-
-model = Sequential()
-
-model.add(LSTM(units=70, return_sequences=True, input_shape=(xTrain.shape[1], featureNumber)))
-model.add(Dropout(0.2))
-
-model.add(LSTM(units=70, return_sequences=True))
-model.add(Dropout(0.2))
-
-model.add(LSTM(units=70, return_sequences=True))
-model.add(Dropout(0.2))
-
-model.add(LSTM(units=70))
-model.add(Dropout(0.2))
-
-model.add(Dense(units=1))
-
-
-# 7. Compile the model
-model.compile(optimizer='adam', loss='mean_squared_error')
-
-# 8. Fit the model
-model.fit(xTrain, yTrain, epochs = 80, batch_size=32)
-
-loss = model.history.history['loss']
+# Plot the training loss
+loss = new_model.history.history['loss']
 plt.plot(range(len(loss)), loss)
 plt.xlabel('Epoch number')
 plt.ylabel('Loss')
 plt.show()
-print('')
 
-# model.save("LSTM/" + dataName)
+# Save the model
 save_dir = "LSTM/"
-os.makedirs(save_dir, exist_ok=True)  # Create the directory if it doesn't exist
-# save_model(model, os.path.join(save_dir, dataName+'.h5'), save_format='h5')
-model.save(os.path.join(save_dir, dataName + ".h5")) 
+os.makedirs(save_dir, exist_ok=True)
+new_model.save(os.path.join(save_dir, dataName + ".h5")) 
