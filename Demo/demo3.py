@@ -1,68 +1,104 @@
-import numpy as np
+# 1. Input library and data
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from tensorflow.keras.optimizers import Adam
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sn
 from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential, save_model
+from keras.layers import Dense, LSTM, Dropout
+from keras.initializers import Orthogonal
+from constant import features, target, dataName
+import os
 
-# Example: Load your dataset (replace this with your data loading mechanism)
-# Assuming a CSV file with columns for 10 tokens and target token price
-data = pd.read_csv('ckd-20231207-044857.csv')
 
-# Data preprocessing
-# Assuming 'target_token_price' is the column for the token price to be predicted
-target_column = 'target_token_price'
+data = pd.read_csv('./data/' + dataName + '.csv')
 
-# Extract features (10 tokens) and target variable
-features = data.drop(columns=[target_column])
-target = data[target_column]
+feature_cols = features + target
 
-# Normalizing data using MinMaxScaler
-scaler = MinMaxScaler()
-features_normalized = scaler.fit_transform(features)
-target_normalized = scaler.fit_transform(np.array(target).reshape(-1, 1))
+dataAI = data[feature_cols]
+dataAI.dropna(inplace = True)
+dataAI.dropna(axis = 0)
+dataAI.info()
 
-# Convert data into sequences for LSTM
-sequence_length = 10  # Define sequence length
-X, y = [], []
+numOfRecord = len(dataAI)
+print(f'\n\n\n{numOfRecord}\n\n\n')
+split = int(round(numOfRecord * 0.7, 0))
 
-for i in range(len(features) - sequence_length):
-    X.append(features_normalized[i:(i + sequence_length)])
-    y.append(target_normalized[i + sequence_length])
+# 3. Split data into training set and test set
+featureNumber = len(feature_cols)
+featureNumber= 7
+trainingSet = dataAI.iloc[:split, 0:featureNumber].values
+testSet = dataAI.iloc[split:, 0:featureNumber].values
 
-X = np.array(X)
-y = np.array(y)
+# 4. Train AI Model
+sc = MinMaxScaler(feature_range= (0,1)) 
 
-# Splitting the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+trainingSetScaled = sc.fit_transform(trainingSet)
+testSetScaled =  sc.fit_transform(testSet)
+testSetScaled = testSetScaled[:, 0:featureNumber]
 
-# Build LSTM model
+xTrain = []
+yTrain = []
+
+WS = 12
+for i in range(WS, len(trainingSetScaled)):
+    xTrain.append(trainingSetScaled[i-WS:i, 0:featureNumber])
+    yTrain.append(trainingSetScaled[i, 2])
+
+# 5. Reshape training_set_scaled for LSTM input
+xTrain, yTrain = np.array(xTrain), np.array(yTrain)
+print(len(xTrain))
+xTrain = np.reshape(xTrain, (xTrain.shape[0], xTrain.shape[1], featureNumber))
+
+# 6. Define LSTM model
+# model = Sequential()
+
+# model.add(LSTM(units= 70, return_sequences= True, input_shape = (xTrain.shape[1], 5)))
+# model.add(Dropout(0.2))
+
+# model.add(LSTM(units=70,return_sequences=True))
+# model.add(Dropout(0.2))
+
+# model.add(LSTM(units=70,return_sequences=True))
+# model.add(Dropout(0.2))
+
+# model.add(LSTM(units=70))
+# model.add(Dropout(0.2))
+
+# model.add(Dense(units=1))
+
 model = Sequential()
-model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
-model.add(LSTM(units=50))
+
+model.add(LSTM(units=70, return_sequences=True, input_shape=(xTrain.shape[1], featureNumber)))
+model.add(Dropout(0.2))
+
+model.add(LSTM(units=70, return_sequences=True))
+model.add(Dropout(0.2))
+
+model.add(LSTM(units=70, return_sequences=True))
+model.add(Dropout(0.2))
+
+model.add(LSTM(units=70))
+model.add(Dropout(0.2))
+
 model.add(Dense(units=1))
 
-# Compile the model
-model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
 
-# Train the model
-history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=1)
+# 7. Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
 
-# Evaluate the model
-loss = model.evaluate(X_test, y_test)
-print(f"Test Loss: {loss}")
+# 8. Fit the model
+model.fit(xTrain, yTrain, epochs = 80, batch_size=32)
 
-# Making predictions
-predictions = model.predict(X_test)
+loss = model.history.history['loss']
+plt.plot(range(len(loss)), loss)
+plt.xlabel('Epoch number')
+plt.ylabel('Loss')
+plt.show()
+print('')
 
-# Inverse scaling the predictions
-predictions = scaler.inverse_transform(predictions)
-y_test = scaler.inverse_transform(y_test)
-
-# Optionally, visualize predictions vs actual values for evaluation
-# ... (Plotting code or other evaluation metrics)
-
-# Save the model
-model.save('token_price_prediction_model.h5')
-
+# model.save("LSTM/" + dataName)
+save_dir = "LSTM/"
+os.makedirs(save_dir, exist_ok=True)  # Create the directory if it doesn't exist
+# save_model(model, os.path.join(save_dir, dataName+'.h5'), save_format='h5')
+model.save(os.path.join(save_dir, dataName + ".h5")) 

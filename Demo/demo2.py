@@ -1,68 +1,74 @@
+# 1. Input library and data
+import pandas as pd
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+import matplotlib.pyplot as plt
+import seaborn as sn
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential, load_model, save_model
+from keras.layers import Dense, LSTM, Dropout
+from keras.initializers import Orthogonal
+from constant import features, target, dataName
+import os
 
-# Tạo dữ liệu giả định
-def generate_data(n_samples, n_tokens):
-    # Tạo dữ liệu giả định cho 10 tokens đầu vào
-    X = np.random.rand(n_samples, n_tokens)
-    
-    # Tạo giá trị dự đoán cho token cần dự đoán (token thứ 0)
-    y = X[:, 0] + np.random.normal(0, 0.1, n_samples)
-    
-    return X, y
+# Load your dataset
+data = pd.read_csv('./data/' + dataName + '.csv')
 
-n_samples = 1000
-n_tokens = 10
+# Selecting features and target
+feature_cols = features + target
+dataAI = data[feature_cols]
+dataAI.dropna(inplace=True)
 
-X, y = generate_data(n_samples, n_tokens)
+numOfRecord = len(dataAI)
+print(f'\n\n\n{numOfRecord}\n\n\n')
+split = int(round(numOfRecord * 0.7, 0))
 
-# Xây dựng mô hình LSTM
-model = Sequential()
-model.add(LSTM(50, activation='relu', input_shape=(n_tokens, 1)))
-model.add(Dense(1))
-model.compile(optimizer='adam', loss='mse')
+# Split data into training set and test set
+featureNumber = len(feature_cols)
+trainingSet = dataAI.iloc[:split, 0:featureNumber].values
+testSet = dataAI.iloc[split:, 0:featureNumber].values
 
-# Reshape dữ liệu để phù hợp với đầu vào của mô hình LSTM
-X = np.reshape(X, (n_samples, n_tokens, 1))
+# Scaling
+sc = MinMaxScaler(feature_range=(0, 1))
+trainingSetScaled = sc.fit_transform(trainingSet)
+testSetScaled = sc.transform(testSet[:, 0:featureNumber])
 
-# Huấn luyện mô hình
-epochs = 10
-model.fit(X, y, epochs=epochs, batch_size=32, verbose=1)
+# Preparing training data for LSTM
+xTrain = []
+yTrain = []
 
-# Đánh giá mô hình hoặc sử dụng để dự đoán giá trị mới
+WS = 12
+for i in range(WS, len(trainingSetScaled)):
+    xTrain.append(trainingSetScaled[i-WS:i, 0:featureNumber])
+    yTrain.append(trainingSetScaled[i, 2])  # Assuming the third column is the target
 
-# Xem thực nghiệm dự đoán
-y_pred = model.predict(X)
+xTrain, yTrain = np.array(xTrain), np.array(yTrain)
+xTrain = np.reshape(xTrain, (xTrain.shape[0], xTrain.shape[1], featureNumber))
 
-# Vẽ dự đoán và thực tế so với mỗi giá trị của token
-for i in range(n_tokens):
-    plt.figure(figsize=(12, 6))
-    plt.plot(X[:, i, 0], label='True')
-    plt.plot(y_pred[:, i], label='Predicted')
-    plt.title(f'Token {i}')
-    plt.legend()
-    plt.show()
+# Load the pre-trained LSTM model
+pretrained_model = load_model('path/to/your/pretrained/model.h5')
 
-# Dự đoán giá trị mới
-# Assuming you have already trained and saved the model
+# Freeze the layers (optional)
+for layer in pretrained_model.layers:
+    layer.trainable = False
 
-# Load the model
-model = tf.keras.models.load_model('token_price_prediction_model.h5')
+# Modify the model for your new task
+new_model = Sequential(pretrained_model.layers[:-1])  # Removing the original output layer
+new_model.add(Dense(units=your_output_units, activation='your_activation'))  # Add new output layer
 
-# Assuming you have new data to predict
-new_data = np.array([[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]])
+# Compile the new model
+new_model.compile(optimizer='adam', loss='mean_squared_error')
 
-# Reshape the new data to match the input shape of the model
-new_data = np.reshape(new_data, (new_data.shape[0], new_data.shape[1], 1))
+# Train the new model
+new_model.fit(xTrain, yTrain, epochs=80, batch_size=32)
 
-# Predict the new values
-predictions = model.predict(new_data)
+# Plot the training loss
+loss = new_model.history.history['loss']
+plt.plot(range(len(loss)), loss)
+plt.xlabel('Epoch number')
+plt.ylabel('Loss')
+plt.show()
 
-# Inverse scaling the predictions if necessary
-predictions = scaler.inverse_transform(predictions)
-
-# Print the predicted values
-print(predictions)
-
+# Save the model
+save_dir = "LSTM/"
+os.makedirs(save_dir, exist_ok=True)
+model.save(os.path.join(save_dir, dataName + ".h5")) 
