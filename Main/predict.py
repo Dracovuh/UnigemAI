@@ -64,12 +64,11 @@ predictions = sc.inverse_transform(dump)[:, featureNumber-1]
 
 realValues = testSet[:, featureNumber-1]
 # Apply threshold to convert predictions to binary format
+
 binary_threshold = 0.5
 binary_prediction = int(FirstPred > binary_threshold)
-
 # Print the first binary prediction
 print("First Binary Prediction:", binary_prediction)
-
 # Optional: Compare with the actual first value
 # Assuming 'realValues' are binary (0 or 1)
 first_real_value = testSet[0, featureNumber-1]

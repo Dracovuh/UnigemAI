@@ -36,8 +36,8 @@ trainingSetScaled = sc.fit_transform(trainingSet)
 testSetScaled =  sc.fit_transform(testSet)
 testSetScaled = testSetScaled[:, 0:featureNumber]
 
-xTrain, yTrain = [], np.array(trainingSet)
-
+xTrain = []
+yTrain = []
 
 WS = 12
 for i in range(WS, len(trainingSetScaled)):
