@@ -1,27 +1,76 @@
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+# 1. Input library and data
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sn
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import load_model
+from constant import features, target, dataName, modelName
 
-# Load the data
-df = pd.read_csv('ckd-20231208-041519.csv')
+data = pd.read_csv('./data/' + dataName + '.csv')
 
-# Selecting relevant features and the target variable
-features = ['TransactionBuyM5', 'TransactionSellM5', 'TransBuyM5Change', 'TransSellM5Change', 'VolumeM5', 'VolumeM5Change']
-X = df[features]
-y = df['TargetTP100M15']  # This should be a binary variable (0 or 1)
+# 2. Prepare data for training AI & Clean data
+feature_cols = features + target
 
-# Preprocessing the data (Handle missing values if any)
-# Example: X.fillna(X.mean(), inplace=True)
+dataAI = data[feature_cols]
+dataAI.dropna(inplace = True)
+dataAI.dropna(axis = 0)
+# dataAI.info()
+numOfRecord = len(dataAI)
+print(f'\n\n\n{numOfRecord}\n\n\n')
+split = int(round(numOfRecord * 0.7, 0))
+WS = 12
+featureNumber = len(feature_cols)
+featureNumber = 7
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# 3. Split data into training set and test set
+trainingSet = dataAI.iloc[:split, 0:featureNumber].values
+testSet = dataAI.iloc[split:, 0:featureNumber].values
 
-# Create and train the logistic regression model
-model = LogisticRegression()
-model.fit(X_train, y_train)
+# 4. Train AI Model
+sc = MinMaxScaler(feature_range= (0,1)) 
 
-# Predict and evaluate the model
-predictions = model.predict(X_test)
-accuracy = accuracy_score(y_test, predictions)
-print(f'Accuracy: {accuracy}')
+trainingSetScaled = sc.fit_transform(trainingSet)
+testSetScaled =  sc.fit_transform(testSet)
+testSetScaled = testSetScaled[:, 0:featureNumber]
+
+# 9. AI Predictions
+Model = load_model("LSTM/" + modelName +'.h5')
+
+predictionTest = []
+
+# Use the last window of the training set as the initial batch
+BatchOne = trainingSetScaled[-WS:]
+BatchNew = BatchOne.reshape((1, WS, featureNumber))
+
+# Predict for each time step in the test set
+for i in range(len(testSetScaled)):
+    # Predict the next value
+    FirstPred = Model.predict(BatchNew)[0, 0]
+    predictionTest.append(FirstPred)
+
+    # Prepare the input for the next time step
+    NewVar = testSetScaled[i, :]
+    NewVar = NewVar.reshape(1, 1, featureNumber)
+    
+    BatchNew = np.concatenate((BatchNew[:, 1:, :], NewVar), axis=1)
+
+predictionTest = np.array(predictionTest).reshape(-1, 1)
+
+# Invert scaling to get the actual values
+temp = np.zeros((len(predictionTest), featureNumber-1))
+dump = np.concatenate((temp,predictionTest), axis=1)
+predictions = sc.inverse_transform(dump)[:, featureNumber-1]
+
+realValues = testSet[:, featureNumber-1]
+
+# Plotting the results
+plt.plot(realValues, color='red', label='Actual Values')
+plt.plot(predictions, color='blue', label='Predicted Values')
+plt.title(target[0])
+plt.xlabel('Time')
+plt.ylabel('Target')
+plt.legend()
+plt.show()
+print()
+

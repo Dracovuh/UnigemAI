@@ -26,8 +26,8 @@ split = int(round(numOfRecord * 0.7, 0))
 # 3. Split data into training set and test set
 featureNumber = len(feature_cols)
 featureNumber= 7
-trainingSet = dataAI.iloc[:split, 0:featureNumber].values
-testSet = dataAI.iloc[split:, 0:featureNumber].values
+trainingSet = dataAI.iloc[:split, 0:featureNumber-1].values
+testSet = dataAI.iloc[split:, 0:featureNumber-1].values
 
 # 4. Train AI Model
 sc = MinMaxScaler(feature_range= (0,1)) 
@@ -36,8 +36,8 @@ trainingSetScaled = sc.fit_transform(trainingSet)
 testSetScaled =  sc.fit_transform(testSet)
 testSetScaled = testSetScaled[:, 0:featureNumber]
 
-xTrain = []
-yTrain = []
+xTrain, yTrain = [], np.array(trainingSet)
+
 
 WS = 12
 for i in range(WS, len(trainingSetScaled)):
@@ -80,14 +80,14 @@ model.add(Dropout(0.2))
 model.add(LSTM(units=70))
 model.add(Dropout(0.2))
 
-model.add(Dense(units=1))
+model.add(Dense(units=1, activation='sigmoid'))
 
 
 # 7. Compile the model
-model.compile(optimizer='adam', loss='mean_squared_error')
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 8. Fit the model
-model.fit(xTrain, yTrain, epochs = 80, batch_size=32)
+model.fit(xTrain, yTrain, epochs=80, batch_size=32, validation_split=0.2)
 
 loss = model.history.history['loss']
 plt.plot(range(len(loss)), loss)

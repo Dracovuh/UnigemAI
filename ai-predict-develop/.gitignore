@@ -1,0 +1,6 @@
+.env
+.idea/
+src/__pycache__/
+src/data/
+src/service/__pycache__/
+src/utils/__pycache__/

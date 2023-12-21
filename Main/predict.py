@@ -63,42 +63,46 @@ dump = np.concatenate((temp,predictionTest), axis=1)
 predictions = sc.inverse_transform(dump)[:, featureNumber-1]
 
 realValues = testSet[:, featureNumber-1]
+# Apply threshold to convert predictions to binary format
+binary_threshold = 0.5
+binary_prediction = int(FirstPred > binary_threshold)
 
-predictions_adjusted = predictions[1:]
-realValues_adjusted = realValues[1:]
+# Print the first binary prediction
+print("First Binary Prediction:", binary_prediction)
 
-# Calculate percentage changes
-differences = predictions_adjusted - realValues_adjusted
-price_changes = differences / realValues_adjusted * 100
+# Optional: Compare with the actual first value
+# Assuming 'realValues' are binary (0 or 1)
+first_real_value = testSet[0, featureNumber-1]
+print("\nFirst Actual Value:", first_real_value)
 
-last_record_scaled = trainingSetScaled[-1].reshape(1, 1, featureNumber)
-
-# Predict the next hour's price
-next_hour_prediction_scaled = Model.predict(last_record_scaled)
-next_hour_prediction = sc.inverse_transform(np.concatenate((np.zeros((1, featureNumber-1)), next_hour_prediction_scaled), axis=1))[0, -1]
-
-# Compare with the current price
-current_price = dataAI.iloc[-1, dataAI.columns.get_loc(target[0])]
-prediction = "pump" if next_hour_prediction > current_price else "dump"
-
-# Print the prediction
-print("In the next hour, this token will:", prediction)
-
+# predictions_adjusted = predictions[1:]
+# realValues_adjusted = realValues[1:]
+# # Calculate percentage changes
+# differences = predictions_adjusted - realValues_adjusted
+# price_changes = differences / realValues_adjusted * 100
+# last_record_scaled = trainingSetScaled[-1].reshape(1, 1, featureNumber)
+# # Predict the next hour's price
+# next_hour_prediction_scaled = Model.predict(last_record_scaled)
+# next_hour_prediction = sc.inverse_transform(np.concatenate((np.zeros((1, featureNumber-1)), next_hour_prediction_scaled), axis=1))[0, -1]
+# # Compare with the current price
+# current_price = dataAI.iloc[-1, dataAI.columns.get_loc(target[0])]
+# prediction = "1" if next_hour_prediction > current_price else "0"
+# # Print the prediction
+# print("TargetTP100M15:", prediction)
 # Define threshold and classify changes
 # threshold = 0.5
 # binary_predictions = ['pump' if change > threshold else 'dump' for change in price_changes]
-
 # # Print first 10 binary predictions
 # print("this token will (pump or dump):")
 # print(binary_predictions[:1])
 
 # Plotting the results
-# plt.plot(realValues, color='red', label='Actual Values')
-# plt.plot(predictions, color='blue', label='Predicted Values')
-# plt.title(target[0])
-# plt.xlabel('Time')
-# plt.ylabel('Target')
-# plt.legend()
-# plt.show()
-# print()
+plt.plot(realValues, color='red', label='Actual Values')
+plt.plot(predictions, color='blue', label='Predicted Values')
+plt.title(target[0])
+plt.xlabel('Time')
+plt.ylabel('Target')
+plt.legend()
+plt.show()
+print()
 
