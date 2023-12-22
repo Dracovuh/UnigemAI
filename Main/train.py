@@ -23,11 +23,23 @@ numOfRecord = len(dataAI)
 print(f'\n\n\n{numOfRecord}\n\n\n')
 split = int(round(numOfRecord * 0.7, 0))
 
+# 2. Group data by ContractAddress
+grouped_data = data.groupby('ContractAddress')
+
+# Directory for saving models
+save_dir = "LSTM/"
+os.makedirs(save_dir, exist_ok=True)
+
+# Loop through each group and train a model
+for contract_address, group in grouped_data:
+    # Extract data for the current contract
+    contract_data = group[feature_cols]
+
 # 3. Split data into training set and test set
 featureNumber = len(feature_cols)
-featureNumber= 7
-trainingSet = dataAI.iloc[:split, 0:featureNumber-1].values
-testSet = dataAI.iloc[split:, 0:featureNumber-1].values
+# featureNumber= 7
+trainingSet = dataAI.iloc[:split, 0:featureNumber].values
+testSet = dataAI.iloc[split:, 0:featureNumber].values
 
 # 4. Train AI Model
 sc = MinMaxScaler(feature_range= (0,1)) 

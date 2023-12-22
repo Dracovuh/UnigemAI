@@ -41,7 +41,7 @@ print("Accuracy:", accuracy_score(Y_test, Y_pred))
 # print("Classification Report:\n", classification_report(Y_test, Y_pred, zero_division=0))  # Add zero_division=0 to handle the warning
 # print("First 10 Predictions:", Y_pred[:10])
 print("\nFirst Predictions:")
-for i in range(200):
+for i in range(1):
     print(f"Actual: {Y_test[i]}, Predicted: {Y_pred[i]}")
 
 # Save the model

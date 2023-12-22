@@ -10,7 +10,6 @@ from keras.initializers import Orthogonal
 from constant import features, target, dataName
 import os
 
-
 data = pd.read_csv('./data/' + dataName + '.csv')
 
 feature_cols = features + target
