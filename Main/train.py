@@ -12,6 +12,12 @@ import os
 
 data = pd.read_csv('./data/' + dataName + '.csv')
 
+unique_tokens = data['TokenName'].unique()  # Assuming TokenName is a unique identifier
+
+for token in unique_tokens:
+    # Filter data for the current token
+    data_token = data[data['TokenName'] == token]
+
 feature_cols = features + target
 
 dataAI = data[feature_cols]
@@ -99,7 +105,7 @@ model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 8. Fit the model
-model.fit(xTrain, yTrain, epochs=80, batch_size=32, validation_split=0.2)
+model.fit(xTrain, yTrain, epochs=30, batch_size=32, validation_split=0.2)
 
 loss = model.history.history['loss']
 plt.plot(range(len(loss)), loss)

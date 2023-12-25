@@ -67,12 +67,28 @@ realValues = testSet[:, featureNumber-1]
 
 binary_threshold = 0.5
 binary_prediction = int(FirstPred > binary_threshold)
+
+print("Predictions vs Actual Values:")
+for i in range(len(predictions)):
+    print(f"Prediction: {predictions[i]}, Actual: {realValues[i]}")
+
+# Plotting the results
+plt.plot(realValues, color='red', label='Actual Values')
+plt.plot(predictions, color='blue', label='Predicted Values')
+plt.title("Predicted Values vs Actual Values")
+plt.xlabel('Time')
+plt.ylabel('Values')
+plt.legend()
+plt.show()
+
+
+
 # Print the first binary prediction
-print("First Binary Prediction:", binary_prediction)
-# Optional: Compare with the actual first value
-# Assuming 'realValues' are binary (0 or 1)
-first_real_value = testSet[0, featureNumber-1]
-print("\nFirst Actual Value:", first_real_value)
+# print("First Binary Prediction:", binary_prediction)
+# # Optional: Compare with the actual first value
+# # Assuming 'realValues' are binary (0 or 1)
+# first_real_value = testSet[0, featureNumber-1]
+# print("\nFirst Actual Value:", first_real_value)
 
 binary_predictions = (predictions > binary_threshold).astype(int)
 
@@ -88,13 +104,3 @@ plt.xlabel('Time')
 plt.ylabel('Binary Value')
 plt.legend()
 plt.show()
-
-# # Plotting the results
-# plt.plot(realValues, color='red', label='Actual Values')
-# plt.plot(predictions, color='blue', label='Predicted Values')
-# plt.title(target[0])
-# plt.xlabel('Time')
-# plt.ylabel('Target')
-# plt.legend()
-# plt.show()
-# print()

@@ -25,7 +25,7 @@ split = int(round(numOfRecord * 0.7, 0))
 
 # 3. Split data into training set and test set
 featureNumber = len(feature_cols)
-featureNumber= 7
+# featureNumber= 7
 trainingSet = dataAI.iloc[:split, 0:featureNumber].values
 testSet = dataAI.iloc[split:, 0:featureNumber].values
 
@@ -80,14 +80,14 @@ model.add(Dropout(0.2))
 model.add(LSTM(units=70))
 model.add(Dropout(0.2))
 
-model.add(Dense(units=1))
+model.add(Dense(units=1, activation='sigmoid'))
 
 
 # 7. Compile the model
-model.compile(optimizer='adam', loss='mean_squared_error')
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 8. Fit the model
-model.fit(xTrain, yTrain, epochs = 80, batch_size=32)
+model.fit(xTrain, yTrain, epochs=80, batch_size=32, validation_split=0.2)
 
 loss = model.history.history['loss']
 plt.plot(range(len(loss)), loss)
