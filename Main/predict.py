@@ -15,7 +15,7 @@ feature_cols = features + target
 dataAI = data[feature_cols]
 dataAI.dropna(inplace = True)
 dataAI.dropna(axis = 0)
-# dataAI.info()
+dataAI.info()
 numOfRecord = len(dataAI)
 print(f'\n\n\n{numOfRecord}\n\n\n')
 split = int(round(numOfRecord * 0.7, 0))
@@ -62,25 +62,25 @@ temp = np.zeros((len(predictionTest), featureNumber-1))
 dump = np.concatenate((temp,predictionTest), axis=1)
 predictions = sc.inverse_transform(dump)[:, featureNumber-1]
 
-realValues = testSet[:, featureNumber-1]
+realValues = dataAI.iloc[split:, featureNumber-1].values
+# realValues = testSet[:, featureNumber-1]
 # Apply threshold to convert predictions to binary format
 
 binary_threshold = 0.5
-binary_prediction = int(FirstPred > binary_threshold)
+binary_predictions = (predictions > binary_threshold).astype(int)
 
-print("Predictions vs Actual Values:")
-for i in range(len(predictions)):
-    print(f"Prediction: {predictions[i]}, Actual: {realValues[i]}")
+print("Binary Predictions vs Actual Values:")
+for i in range(len(binary_predictions)):
+    print(f"Binary Prediction: {binary_predictions[i]}, Actual: {realValues[i]}")
 
 # Plotting the results
-plt.plot(realValues, color='red', label='Actual Values')
-plt.plot(predictions, color='blue', label='Predicted Values')
-plt.title("Predicted Values vs Actual Values")
+plt.plot(realValues, color='red', label='Actual Binary Values from TargetTP100M15')
+plt.plot(binary_predictions, color='blue', label='Binary Predictions')
+plt.title("Binary Predictions vs Actual Binary Values from TargetTP100M15")
 plt.xlabel('Time')
-plt.ylabel('Values')
+plt.ylabel('Binary Value')
 plt.legend()
 plt.show()
-
 
 
 # Print the first binary prediction
@@ -90,17 +90,17 @@ plt.show()
 # first_real_value = testSet[0, featureNumber-1]
 # print("\nFirst Actual Value:", first_real_value)
 
-binary_predictions = (predictions > binary_threshold).astype(int)
+# binary_predictions = (predictions > binary_threshold).astype(int)
 
-# Assuming realValues are also binary, or convert them as well
-# If realValues are not binary, you need to convert them to binary format as well
-binary_realValues = (realValues > binary_threshold).astype(int)
+# # Assuming realValues are also binary, or convert them as well
+# # If realValues are not binary, you need to convert them to binary format as well
+# binary_realValues = (realValues > binary_threshold).astype(int)
 
-# Plotting the binary results
-plt.plot(binary_realValues, color='red', label='Actual Binary Values')
-plt.plot(binary_predictions, color='blue', label='Predicted Binary Values')
-plt.title("Binary Predictions vs Actual Binary Values")
-plt.xlabel('Time')
-plt.ylabel('Binary Value')
-plt.legend()
-plt.show()
+# # Plotting the binary results
+# plt.plot(binary_realValues, color='red', label='Actual Binary Values')
+# plt.plot(binary_predictions, color='blue', label='Predicted Binary Values')
+# plt.title("Binary Predictions vs Actual Binary Values")
+# plt.xlabel('Time')
+# plt.ylabel('Binary Value')
+# plt.legend()
+# plt.show()

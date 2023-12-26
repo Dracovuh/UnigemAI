@@ -98,3 +98,25 @@ plt.show()
 # plt.legend()
 # plt.show()
 # print()
+
+# Print the first binary prediction
+# print("First Binary Prediction:", binary_prediction)
+# # Optional: Compare with the actual first value
+# # Assuming 'realValues' are binary (0 or 1)
+# first_real_value = testSet[0, featureNumber-1]
+# print("\nFirst Actual Value:", first_real_value)
+
+# binary_predictions = (predictions > binary_threshold).astype(int)
+
+# # Assuming realValues are also binary, or convert them as well
+# # If realValues are not binary, you need to convert them to binary format as well
+# binary_realValues = (realValues > binary_threshold).astype(int)
+
+# # Plotting the binary results
+# plt.plot(binary_realValues, color='red', label='Actual Binary Values')
+# plt.plot(binary_predictions, color='blue', label='Predicted Binary Values')
+# plt.title("Binary Predictions vs Actual Binary Values")
+# plt.xlabel('Time')
+# plt.ylabel('Binary Value')
+# plt.legend()
+# plt.show()
