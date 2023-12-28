@@ -38,6 +38,10 @@ testSetScaled = testSetScaled[:, 0:featureNumber]
 Model = load_model("LSTM/" + modelName +'.h5')
 
 predictionTest = []
+for i in range(len(testSetScaled)):
+    BatchNew = trainingSetScaled[i:i+WS, :].reshape((1, WS, featureNumber))
+    pred = Model.predict(BatchNew)[0, 0]
+    predictionTest.append(pred)
 
 # Use the last window of the training set as the initial batch
 BatchOne = trainingSetScaled[-WS:]
@@ -62,6 +66,10 @@ temp = np.zeros((len(predictionTest), featureNumber-1))
 dump = np.concatenate((temp,predictionTest), axis=1)
 predictions = sc.inverse_transform(dump)[:, featureNumber-1]
 
+# realValues = testSet[:, -1]
+# binary_threshold = 0.5
+# binary_predictions = (predictions > binary_threshold).astype(int)
+
 realValues = dataAI.iloc[split:, featureNumber-1].values
 # realValues = testSet[:, featureNumber-1]
 # Apply threshold to convert predictions to binary format
@@ -73,11 +81,36 @@ print("Binary Predictions vs Actual Values:")
 for i in range(len(binary_predictions)):
     print(f"Binary Prediction: {binary_predictions[i]}, Actual: {realValues[i]}")
 
-# Plotting the results
-plt.plot(realValues, color='red', label='Actual Binary Values from TargetTP100M15')
+plt.plot(realValues, color='red', label='Actual Binary Values')
 plt.plot(binary_predictions, color='blue', label='Binary Predictions')
-plt.title("Binary Predictions vs Actual Binary Values from TargetTP100M15")
+plt.title("Binary Predictions vs Actual Binary Values")
 plt.xlabel('Time')
 plt.ylabel('Binary Value')
+plt.legend()
+plt.show()
+
+# Future Value Predictions
+future_steps = 10
+last_window = trainingSetScaled[-WS:]
+future_values = []
+
+for _ in range(future_steps):
+    next_pred = Model.predict(last_window.reshape((1, WS, featureNumber)))[0, 0]
+    future_values.append(next_pred)
+    last_window = np.roll(last_window, -1, axis=0)
+    last_window[-1, -1] = next_pred  # Assumes target is last feature
+
+# Convert future predictions to actual scale
+temp = np.zeros((len(future_values), featureNumber-1))
+future_dump = np.concatenate((temp, np.array(future_values).reshape(-1, 1)), axis=1)
+future_scaled = sc.inverse_transform(future_dump)[:, -1]
+
+print("Future Values Predicted:")
+print(future_scaled)
+
+plt.plot(future_scaled, color='blue', label='Future Predicted Values')
+plt.title("Future Value Predictions")
+plt.ylabel('Predicted Value')
+plt.xlabel('Future Steps')
 plt.legend()
 plt.show()
