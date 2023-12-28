@@ -67,23 +67,6 @@ xTrain, yTrain = np.array(xTrain), np.array(yTrain)
 print(len(xTrain))
 xTrain = np.reshape(xTrain, (xTrain.shape[0], xTrain.shape[1], featureNumber))
 
-# 6. Define LSTM model
-# model = Sequential()
-
-# model.add(LSTM(units= 70, return_sequences= True, input_shape = (xTrain.shape[1], 5)))
-# model.add(Dropout(0.2))
-
-# model.add(LSTM(units=70,return_sequences=True))
-# model.add(Dropout(0.2))
-
-# model.add(LSTM(units=70,return_sequences=True))
-# model.add(Dropout(0.2))
-
-# model.add(LSTM(units=70))
-# model.add(Dropout(0.2))
-
-# model.add(Dense(units=1))
-
 model = Sequential()
 
 model.add(LSTM(units=70, return_sequences=True, input_shape=(xTrain.shape[1], featureNumber)))
@@ -99,7 +82,6 @@ model.add(LSTM(units=70))
 model.add(Dropout(0.2))
 
 model.add(Dense(units=1, activation='sigmoid'))
-
 
 # 7. Compile the model
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
