@@ -1,5 +1,5 @@
-dataName = 'ckd-20231129-084117'
-modelName = 'ckd-20231129-084117'
+dataName = 'ckd-20231230-155252'
+modelName = 'ckd-20231214-023628'
 
 features = [
 "TransactionBuyM5",
