@@ -15,13 +15,13 @@ feature_cols = features + target
 dataAI = data[feature_cols]
 dataAI.dropna(inplace = True)
 dataAI.dropna(axis = 0)
-# dataAI.info()
+dataAI.info()
 numOfRecord = len(dataAI)
 print(f'\n\n\n{numOfRecord}\n\n\n')
 split = int(round(numOfRecord * 0.7, 0))
 WS = 12
 featureNumber = len(feature_cols)
-featureNumber = 5
+featureNumber = 7
 
 # 3. Split data into training set and test set
 trainingSet = dataAI.iloc[:split, 0:featureNumber].values
@@ -33,7 +33,6 @@ sc = MinMaxScaler(feature_range= (0,1))
 trainingSetScaled = sc.fit_transform(trainingSet)
 testSetScaled =  sc.fit_transform(testSet)
 testSetScaled = testSetScaled[:, 0:featureNumber]
-
 
 # 9. AI Predictions
 Model = load_model("LSTM/" + modelName +'.h5')
@@ -59,18 +58,26 @@ for i in range(len(testSetScaled)):
 predictionTest = np.array(predictionTest).reshape(-1, 1)
 
 # Invert scaling to get the actual values
-temp = np.zeros((len(predictionTest), 4))
+temp = np.zeros((len(predictionTest), featureNumber-1))
 dump = np.concatenate((temp,predictionTest), axis=1)
-predictions = sc.inverse_transform(dump)[:, 4]
+predictions = sc.inverse_transform(dump)[:, featureNumber-1]
 
-realValues = testSet[:, 4]
+realValues = dataAI.iloc[split:, featureNumber-1].values
+# realValues = testSet[:, featureNumber-1]
+# Apply threshold to convert predictions to binary format
+
+binary_threshold = 0.5
+binary_predictions = (predictions > binary_threshold).astype(int)
+
+print("Binary Predictions vs Actual Values:")
+for i in range(len(binary_predictions)):
+    print(f"Binary Prediction: {binary_predictions[i]}, Actual: {realValues[i]}")
 
 # Plotting the results
-plt.plot(realValues, color='red', label='Actual Values')
-plt.plot(predictions, color='blue', label='Predicted Values')
-plt.title(target[0])
+plt.plot(realValues, color='red', label='Actual Binary Values from TargetTP100M15')
+plt.plot(binary_predictions, color='blue', label='Binary Predictions')
+plt.title("Binary Predictions vs Actual Binary Values from TargetTP100M15")
 plt.xlabel('Time')
-plt.ylabel('Target')
+plt.ylabel('Binary Value')
 plt.legend()
 plt.show()
-print()

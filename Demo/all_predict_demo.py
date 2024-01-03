@@ -105,18 +105,39 @@ plt.show()
 # # Assuming 'realValues' are binary (0 or 1)
 # first_real_value = testSet[0, featureNumber-1]
 # print("\nFirst Actual Value:", first_real_value)
-
 # binary_predictions = (predictions > binary_threshold).astype(int)
-
 # # Assuming realValues are also binary, or convert them as well
 # # If realValues are not binary, you need to convert them to binary format as well
 # binary_realValues = (realValues > binary_threshold).astype(int)
-
 # # Plotting the binary results
 # plt.plot(binary_realValues, color='red', label='Actual Binary Values')
 # plt.plot(binary_predictions, color='blue', label='Predicted Binary Values')
 # plt.title("Binary Predictions vs Actual Binary Values")
 # plt.xlabel('Time')
+# plt.ylabel('Binary Value')
+# plt.legend()
+# plt.show()
+
+#29/12/2023 (binary predict print out 10 values)
+# last_window = trainingSetScaled[-WS:]
+# for _ in range(num_future_steps):
+#     reshaped_window = last_window.reshape((1, WS, featureNumber))
+#     next_pred = Model.predict(reshaped_window)[0, 0]
+#     # Convert prediction to binary
+#     binary_pred = int(next_pred > binary_threshold)
+#     future_binary_predictions.append(binary_pred)
+#     # Update last window with the new prediction
+#     new_row = np.zeros(featureNumber)
+#     new_row[0] = next_pred  # Update with the continuous prediction
+#     last_window = np.roll(last_window, -1, axis=0)
+#     last_window[-1] = new_row
+# # Print future binary values
+# print("Future Binary Values Predicted:")
+# print(future_binary_predictions)
+# # Plotting the future binary predictions
+# plt.plot(future_binary_predictions, color='blue', label='Future Binary Predictions')
+# plt.title("Future Binary Value Predictions")
+# plt.xlabel('Future Steps')
 # plt.ylabel('Binary Value')
 # plt.legend()
 # plt.show()
