@@ -6,6 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential, save_model
 from keras.layers import Dense, LSTM, Dropout
 from constant import features, target, dataName
+import os
 
 data = pd.read_csv('./data/' + dataName + '.csv')
 
