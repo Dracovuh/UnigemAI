@@ -9,12 +9,14 @@ from constant import features, target, dataName
 import os
 
 data = pd.read_csv('./data/' + dataName + '.csv')
+data.info()
+#1.
 
-unique_tokens = data['TokenName'].unique()  # Assuming TokenName is a unique identifier
+# unique_tokens = data['TokenName'].unique()  # Assuming TokenName is a unique identifier
 
-for token in unique_tokens:
-    # Filter data for the current token
-    data_token = data[data['TokenName'] == token]
+# for token in unique_tokens:
+#     # Filter data for the current token
+#     data_token = data[data['TokenName'] == token]
 
 feature_cols = features + target
 
@@ -22,28 +24,31 @@ dataAI = data[feature_cols]
 dataAI.dropna(inplace = True)
 dataAI.dropna(axis = 0)
 dataAI.info()
+#2.
 
 numOfRecord = len(dataAI)
 print(f'\n\n\n{numOfRecord}\n\n\n')
 split = int(round(numOfRecord * 0.7, 0))
+#3.
 
-# 2. Group data by ContractAddress
-grouped_data = data.groupby('ContractAddress')
+# # Group data by ContractAddress
+# grouped_data = data.groupby('ContractAddress')
 
-# Directory for saving models
-save_dir = "LSTM/"
-os.makedirs(save_dir, exist_ok=True)
+# # Directory for saving models
+# save_dir = "LSTM/"
+# os.makedirs(save_dir, exist_ok=True)
 
-# Loop through each group and train a model
-for contract_address, group in grouped_data:
-    # Extract data for the current contract
-    contract_data = group[feature_cols]
+# # Loop through each group and train a model
+# for contract_address, group in grouped_data:
+#     # Extract data for the current contract
+#     contract_data = group[feature_cols]
 
 # 3. Split data into training set and test set
 featureNumber = len(feature_cols)
 # featureNumber= 7
 trainingSet = dataAI.iloc[:split, 0:featureNumber].values
 testSet = dataAI.iloc[split:, 0:featureNumber].values
+#4.
 
 # 4. Train AI Model
 sc = MinMaxScaler(feature_range= (0,1)) 
@@ -51,6 +56,7 @@ sc = MinMaxScaler(feature_range= (0,1))
 trainingSetScaled = sc.fit_transform(trainingSet)
 testSetScaled =  sc.fit_transform(testSet)
 testSetScaled = testSetScaled[:, 0:featureNumber]
+#5.
 
 xTrain = []
 yTrain = []
@@ -85,7 +91,7 @@ model.add(Dense(units=1, activation='sigmoid'))
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 8. Fit the model
-model.fit(xTrain, yTrain, epochs=80, batch_size=32, validation_split=0.2)
+model.fit(xTrain, yTrain, epochs=50, batch_size=32, validation_split=0.2)
 
 loss = model.history.history['loss']
 plt.plot(range(len(loss)), loss)

@@ -27,6 +27,7 @@ def training(data, interval):
             output.append(Feature.Outputs.PriceChangeH24)
 
         feature_cols = Feature.Inputs + output
+        
         dataAI = data[feature_cols].copy() 
         dataAI.dropna(inplace=True)
 

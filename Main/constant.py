@@ -1,4 +1,4 @@
-dataName = 'ckd-20231230-155252'
+dataName = 'ckd-20231214-023628'
 modelName = 'ckd-20231214-023628'
 
 features = [
