@@ -2,53 +2,37 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sn
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential, save_model
 from keras.layers import Dense, LSTM, Dropout
+from keras.initializers import Orthogonal
 from constant import features, target, dataName
 import os
 
 data = pd.read_csv('./data/' + dataName + '.csv')
-data.info()
-#1.
-
-# unique_tokens = data['TokenName'].unique()  # Assuming TokenName is a unique identifier
-
-# for token in unique_tokens:
-#     # Filter data for the current token
-#     data_token = data[data['TokenName'] == token]
-
+# print(data)
 feature_cols = features + target
+#1
 
 dataAI = data[feature_cols]
 dataAI.dropna(inplace = True)
 dataAI.dropna(axis = 0)
 dataAI.info()
-#2.
+#2
 
 numOfRecord = len(dataAI)
 print(f'\n\n\n{numOfRecord}\n\n\n')
 split = int(round(numOfRecord * 0.7, 0))
-#3.
-
-# # Group data by ContractAddress
-# grouped_data = data.groupby('ContractAddress')
-
-# # Directory for saving models
-# save_dir = "LSTM/"
-# os.makedirs(save_dir, exist_ok=True)
-
-# # Loop through each group and train a model
-# for contract_address, group in grouped_data:
-#     # Extract data for the current contract
-#     contract_data = group[feature_cols]
 
 # 3. Split data into training set and test set
 featureNumber = len(feature_cols)
 # featureNumber= 7
+#3
+
 trainingSet = dataAI.iloc[:split, 0:featureNumber].values
 testSet = dataAI.iloc[split:, 0:featureNumber].values
-#4.
+#4
 
 # 4. Train AI Model
 sc = MinMaxScaler(feature_range= (0,1)) 
@@ -56,7 +40,6 @@ sc = MinMaxScaler(feature_range= (0,1))
 trainingSetScaled = sc.fit_transform(trainingSet)
 testSetScaled =  sc.fit_transform(testSet)
 testSetScaled = testSetScaled[:, 0:featureNumber]
-#5.
 
 xTrain = []
 yTrain = []
@@ -71,6 +54,11 @@ xTrain, yTrain = np.array(xTrain), np.array(yTrain)
 print(len(xTrain))
 xTrain = np.reshape(xTrain, (xTrain.shape[0], xTrain.shape[1], featureNumber))
 
+if i < WS + 5:  # Adjust this number to print more sequences
+        print(f"Sequence {i-WS}: {trainingSetScaled[i-WS:i, 0:featureNumber]} -> Target: {trainingSetScaled[i, 2]}")
+
+
+# 6. Define LSTM model
 model = Sequential()
 
 model.add(LSTM(units=70, return_sequences=True, input_shape=(xTrain.shape[1], featureNumber)))
@@ -87,11 +75,12 @@ model.add(Dropout(0.2))
 
 model.add(Dense(units=1, activation='sigmoid'))
 
+
 # 7. Compile the model
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 8. Fit the model
-model.fit(xTrain, yTrain, epochs=50, batch_size=32, validation_split=0.2)
+model.fit(xTrain, yTrain, epochs=80, batch_size=32, validation_split=0.2)
 
 loss = model.history.history['loss']
 plt.plot(range(len(loss)), loss)
@@ -99,6 +88,24 @@ plt.xlabel('Epoch number')
 plt.ylabel('Loss')
 plt.show()
 print('')
+
+# 9. Prepare Test Set for Evaluation
+xTest = []
+yTest = []
+
+for i in range(WS, len(testSetScaled)):
+    xTest.append(testSetScaled[i-WS:i, 0:featureNumber])
+    yTest.append(testSetScaled[i, 2])
+
+xTest, yTest = np.array(xTest), np.array(yTest)
+xTest = np.reshape(xTest, (xTest.shape[0], xTest.shape[1], featureNumber))
+
+# 10. Evaluate the Model on the Test Set
+test_loss, test_accuracy = model.evaluate(xTest, yTest, verbose=1)
+print(f"Test Loss: {test_loss}, Test Accuracy: {test_accuracy}")
+
+# 11. Optionally, Predict Using the Model
+predictions = model.predict(xTest)
 
 # model.save("LSTM/" + dataName)
 save_dir = "LSTM/"

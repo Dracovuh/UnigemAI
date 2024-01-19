@@ -11,7 +11,7 @@ data = pd.read_csv('./data/' + dataName + '.csv')
 
 # 2. Prepare data for training AI & Clean data
 feature_cols = features + target
-
+ 
 dataAI = data[feature_cols]
 dataAI.dropna(inplace = True)
 dataAI.dropna(axis = 0)
