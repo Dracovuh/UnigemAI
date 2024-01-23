@@ -1,6 +1,6 @@
-.env
 .idea/
-src/__pycache__/
-src/data/
-src/service/__pycache__/
-src/utils/__pycache__/
+PythonAiPredict/src/models/15m/model.h5
+PythonAiPredict/src/models/1h/model.h5
+PythonAiPredict/src/models/
+PythonAiPredict/src/tmp/tmp.py
+PythonAiPredict/src/tmp/
