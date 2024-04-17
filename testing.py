@@ -387,7 +387,7 @@ def training(
         # data: pd.DataFrame,
         interval):
     interval = '15m'
-    data = pd.read_csv(fr'src\data\training_ai_data01-02_03_24.csv')
+    data = pd.read_csv(fr'src\data\new_data.csv')
     try:
         # ! Validate
         if interval not in INTERVALS:

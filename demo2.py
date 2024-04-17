@@ -53,7 +53,7 @@ class Config:
 
     class Training:
         WS = 30
-        EPOCH = 100
+        EPOCH = 10000
 
 INTERVALS = ['15m', '1h', '6h', '24h']
 

@@ -98,7 +98,7 @@ def training(
         # data: pd.DataFrame,
         interval):
     interval = '15m'
-    data = pd.read_csv(fr'./data/training_ai_data01-02_03_24 (2).csv')
+    data = pd.read_csv(fr'src\data\training_ai_data01-02_03_24.csv')
     try:
         # ! Validate
         if interval not in INTERVALS:
@@ -281,11 +281,11 @@ def training(
                                batch_size = 32, validation_split=0.2)
             histories.append(history)
 
-        Save the model
+        # Save the model
         save_dir = rf'src/models/{interval}'
-        os.makedirs(save_dir, exist_ok = True)
-        save_dir = os.path.join(save_dir, "model.h5")
-        model.save(save_dir)
+        # os.makedirs(save_dir, exist_ok = True)
+        # save_dir = os.path.join(save_dir, "model.h5")
+        # model.save(save_dir)
 
 
         # ! Loss diagram
@@ -312,12 +312,6 @@ def training(
             # plt.close()
 
         # ! Evaluation
-        # Save the model
-        save_dir = rf'src/models/{interval}'
-        os.makedirs(save_dir, exist_ok = True)
-        save_dir = os.path.join(save_dir, "model.h5")
-        model.save(save_dir)
-
         predictionTest = []
 
         x_tests=[]
