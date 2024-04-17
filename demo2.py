@@ -52,8 +52,8 @@ class Config:
     TRAIN_TOKEN = os.getenv("TRAIN_TOKEN")
 
     class Training:
-        WS = 30
-        EPOCH = 10000
+        WS = 3
+        EPOCH = 100
 
 INTERVALS = ['15m', '1h', '6h', '24h']
 
@@ -183,7 +183,7 @@ def training(
         # data: pd.DataFrame,
         interval):
     interval = '15m'
-    data = pd.read_csv(fr'src/data/training_ai_data01-02_03_24.csv')
+    data = pd.read_csv(fr'src/data/new_data.csv')
     try:
         # ! Validate
         if interval not in INTERVALS:
